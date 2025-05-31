@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/lib/supabaseClient';
 import { useState } from 'react';
 import { z } from 'zod';
+import { useRouter } from 'next/navigation';
 
 // Definición del esquema de validación con Zod
 const baseSchema = z.object({
@@ -26,6 +27,7 @@ const registerSchema = baseSchema.refine((data) => data.password === data.confir
 type FormData = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     name: '',
@@ -110,7 +112,9 @@ export default function RegisterPage() {
 
       if (error) throw error;
       console.log('Usuario registrado exitosamente:', data);
-      // Aquí podrías redirigir al usuario o mostrar un mensaje de éxito
+      router.push('/dashboard');
+      // Use SoonerToast
+      // toast.success('Usuario registrado exitosamente');
     } catch (error) {
       console.error('Error al registrar:', error);
       setErrors(prev => ({
