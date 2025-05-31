@@ -92,7 +92,7 @@ describe('RegisterPage', () => {
           password: 'password123',
           options: {
             data: {
-              name: 'Usuario Test'
+              displayName: 'Usuario Test'
             }
           }
         });

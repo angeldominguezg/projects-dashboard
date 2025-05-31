@@ -103,7 +103,7 @@ export default function RegisterPage() {
         password: formData.password,
         options: {
           data: {
-            name: formData.name
+            displayName: formData.name,
           }
         }
       });
