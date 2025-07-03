@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Menu } from "lucide-react";
 import { useState } from "react";
-import { Sidebar } from "@/components/sidebar";
+import { Sidebar } from "@/components/Sidebar";
+import QueryProvider from "@/components/QueryProvider";
 
 export default function DashboardLayout({
   children,
@@ -40,7 +41,7 @@ export default function DashboardLayout({
         isSidebarOpen ? "md:ml-72" : ""
       )}>
         <div className="container p-6 md:p-8">
-          {children}
+          <QueryProvider>{children}</QueryProvider>
         </div>
       </main>
     </div>
