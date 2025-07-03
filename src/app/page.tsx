@@ -1,5 +1,3 @@
-'use client';
-
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
@@ -14,6 +12,11 @@ export default function Home() {
           Gestiona tus proyectos y clientes en un solo lugar
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
+          <Link href="/dashboard">
+            <Button size="lg" className="w-full sm:w-40 text-lg">
+              TEST: Dashboard
+            </Button>
+          </Link>
           <Link href="/login">
             <Button size="lg" className="w-full sm:w-40 text-lg">
               Login
