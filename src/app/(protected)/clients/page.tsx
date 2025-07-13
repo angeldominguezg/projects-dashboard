@@ -1,11 +1,11 @@
 import TestTableSupabase from "@/components/test/TestTableSupabase";
 
-export default function DashboardPage() {
+export default function ClientsPage() {
 
   return (
     <div>
       <h1 className="text-4xl font-bold tracking-tight">
-        Welcome to <span className="text-red-500">TEST AREA</span> 
+        My <span className="text-red-500">Clients</span> 
       </h1>
       {/* <TestTable /> */}
       <TestTableSupabase />
