@@ -1,49 +1,50 @@
-"use client";
-
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { Menu } from "lucide-react";
-import { useState } from "react";
-import { Sidebar } from "@/components/Sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
 import QueryProvider from "@/components/QueryProvider";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+import { Separator } from "@/components/ui/separator"
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-
+function layout({children}: {children: React.ReactNode}) {
   return (
-    <div className="flex min-h-screen">
-      {/* Mobile sidebar toggle */}
-      <Button
-        variant="ghost"
-        className="fixed top-4 left-4 z-50 md:hidden"
-        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-      >
-        <Menu className="h-6 w-6" />
-      </Button>
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        {/* App Header */}
+        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+          <div className="flex items-center gap-2 px-4">
+            <SidebarTrigger className="-ml-1" />
+            <Separator
+              orientation="vertical"
+              className="mr-2 data-[orientation=vertical]:h-4"
+            />
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem className="hidden md:block">
+                  <BreadcrumbLink href="#">
+                    Building Your Application
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator className="hidden md:block" />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>Data Fetching</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
+          </div>
+        </header>
 
-      {/* Sidebar */}
-      <div
-        className={cn(
-          "fixed inset-y-0 z-40 w-72 -translate-x-full border-r bg-background transition-transform md:translate-x-0",
-          isSidebarOpen && "translate-x-0"
-        )}
-      >
-        <Sidebar className="w-full" />
-      </div>
-
-      {/* Main content */}
-      <main className={cn(
-        "flex-1 transition-all",
-        isSidebarOpen ? "md:ml-72" : ""
-      )}>
-        <div className="container p-6 md:p-8">
+        {/* App content */}
+         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+          <div className="grid auto-rows-min gap-4 md:grid-cols-3">
+            <div className="bg-muted/50 aspect-video rounded-xl" />
+            <div className="bg-muted/50 aspect-video rounded-xl" />
+            <div className="bg-muted/50 aspect-video rounded-xl" />
+          </div>
           <QueryProvider>{children}</QueryProvider>
-        </div>
-      </main>
-    </div>
+         </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
+
+export default layout;
