@@ -7,6 +7,7 @@ import {
 } from "@tanstack/react-query";
 import ClientsDataTableWrapper from "@/components/ClientsDataTable/ClientsDataTableWrapper";
 
+
 async function fetchClients(): Promise<Client[] | undefined> {
   const supabase = createClient();
   const { data, error } = await supabase.from("clients").select("*");

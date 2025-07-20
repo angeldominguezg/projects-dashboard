@@ -22,10 +22,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Input } from "../ui/input";
+import {Button} from "../ui/button";
 
 import { DataTablePagination } from "../data-table-pagination";
-
-import { Input } from "../ui/input";
+// import { useRouter } from "next/router";
 
 
 interface DataTableProps<TData, TValue> {
@@ -40,7 +41,6 @@ export function DataTable<TData, TValue>({
 }: DataTableProps<TData, TValue>) {
 
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  
 
   const table = useReactTable({
     data,
@@ -56,7 +56,7 @@ export function DataTable<TData, TValue>({
 
   return (
     <div>
-      <div className="flex items-center py-4">
+      <div className="flex items-center justify-between py-4">
         <Input
           placeholder="Filter clients..."
           value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
@@ -65,6 +65,9 @@ export function DataTable<TData, TValue>({
           }
           className="max-w-sm"
         />
+         <Button onClick={() => console.log("Navigate To Create client")}>
+                New Client
+              </Button>
       </div>
       {/* Main table */}
       <div className="rounded-md border my-2">
