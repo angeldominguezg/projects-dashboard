@@ -61,6 +61,10 @@ const data = {
           title: "Clients",
           url: "/clients",
         },
+        {
+          title: "Projects",
+          url: "/projects",
+        },
         // {
         //   title: "Starred",
         //   url: "#",
