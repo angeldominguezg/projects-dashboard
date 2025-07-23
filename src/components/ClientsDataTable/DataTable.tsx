@@ -26,7 +26,7 @@ import { Input } from "../ui/input";
 import {Button} from "../ui/button";
 
 import { DataTablePagination } from "../data-table-pagination";
-// import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 
 
 interface DataTableProps<TData, TValue> {
@@ -39,7 +39,7 @@ export function DataTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
-
+  const router = useRouter();
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
   const table = useReactTable({
@@ -65,9 +65,9 @@ export function DataTable<TData, TValue>({
           }
           className="max-w-sm"
         />
-         <Button onClick={() => console.log("Navigate To Create client")}>
-                New Client
-              </Button>
+        <Button onClick={() => router.push("/clients/new")}>
+          New Client
+        </Button>
       </div>
       {/* Main table */}
       <div className="rounded-md border my-2">
@@ -123,6 +123,6 @@ export function DataTable<TData, TValue>({
       {/* END Main table */}
       <DataTablePagination table={table} />
     </div>
-  )
+  );
 }
 
