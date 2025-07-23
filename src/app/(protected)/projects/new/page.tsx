@@ -1,9 +1,17 @@
-import React from 'react'
+import { ProjectForm } from "@/components/Forms/ProjectForm";
 
-function page() {
+function NewProject() {
   return (
-    <div>page</div>
-  )
+    <div>
+      <h1 className="text-4xl font-bold tracking-tight">
+        New <span className="text-red-500">Project</span>
+      </h1>
+
+      <div className="max-w-md mx-auto">
+        <ProjectForm />
+      </div>
+    </div>
+  );
 }
 
-export default page
+export default NewProject;
