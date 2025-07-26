@@ -12,15 +12,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal } from "lucide-react";
 
-export type Project = {
+export type Task = {
   id: string;
-  client_id: string;
+  project_id: string;
   name: string;
   description: string;
   created_at: string;
 };
 
-export const columns: ColumnDef<Project>[] = [
+export const columns: ColumnDef<Task>[] = [
   {
     accessorKey: "name",
     header: "Name",
@@ -33,7 +33,6 @@ export const columns: ColumnDef<Project>[] = [
     accessorKey: "created_at",
     header: "Created At",
   },
-  // TODO: WIP Add actions to project data table.
   {
     id: "actions",
     cell: ({ row }) => {
@@ -46,15 +45,15 @@ export const columns: ColumnDef<Project>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Add Task</DropdownMenuLabel>
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
               onClick={() => navigator.clipboard.writeText(row.original.name)}
             >
-              Copy Project Name
+              Copy Task Name
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>View Client details</DropdownMenuItem>
             <DropdownMenuItem>View Project details</DropdownMenuItem>
+            <DropdownMenuItem>View Task details</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );
