@@ -64,7 +64,7 @@ async function createProjectInSupabase(data: FormData) {
   return newProject;
 }
 
-export function ProjectForm() {
+export function ProjectForm({ clientID }) {
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -76,7 +76,7 @@ export function ProjectForm() {
     defaultValues: {
       name: "",
       description: "",
-      client_id: "",
+      client_id: clientID ? clientID : "",
     },
   });
 
@@ -136,6 +136,8 @@ export function ProjectForm() {
             </FormItem>
           )}
         />
+
+        {!clientID && (
         <FormField
           control={form.control}
           name="client_id"
@@ -166,7 +168,7 @@ export function ProjectForm() {
               <FormMessage />
             </FormItem>
           )}
-        />
+        />)}
 
         <div className="flex justify-end gap-3">
           <Button
