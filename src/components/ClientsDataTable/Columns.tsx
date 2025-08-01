@@ -41,6 +41,9 @@ export const columns: ColumnDef<Client>[] = [
   {
     accessorKey: "id",
     header: "ID",
+    cell: ({ row }) => {
+      return (row.original.id.split("-")[0]+ "...");
+    },
   },
   {
     accessorKey: "name",
