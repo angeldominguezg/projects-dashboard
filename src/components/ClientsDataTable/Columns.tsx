@@ -20,6 +20,14 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ProjectForm } from "../Forms/ProjectForm";
+import { smartTimeAgo } from "@/utils/timeAgo";
+import { toDDMMYYYY } from "@/utils/prettyDates";
+
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 export type Client = {
   id: string;
@@ -45,6 +53,16 @@ export const columns: ColumnDef<Client>[] = [
   {
     accessorKey: "created_at",
     header: "Created At",
+    cell: ({ row }) => {
+      return (
+        <Tooltip>
+          <TooltipTrigger>{toDDMMYYYY(row.original.created_at)}</TooltipTrigger>
+          <TooltipContent>
+            <p>{smartTimeAgo(row.original.created_at)}</p>
+          </TooltipContent>
+        </Tooltip>
+      );
+    },
   },
   {
     id: "actions",
@@ -77,10 +95,10 @@ export const columns: ColumnDef<Client>[] = [
 
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Create Project for Client: {row.original.name} </DialogTitle>
-              <DialogDescription>
-                Description...
-              </DialogDescription>
+              <DialogTitle>
+                Create Project for Client: {row.original.name}{" "}
+              </DialogTitle>
+              <DialogDescription>Description...</DialogDescription>
             </DialogHeader>
             <ProjectForm clientID={row.original.id} />
           </DialogContent>

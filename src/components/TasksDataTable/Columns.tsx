@@ -12,6 +12,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal } from "lucide-react";
 
+import { smartTimeAgo } from "@/utils/timeAgo";
+import { toDDMMYYYY } from "@/utils/prettyDates";
+
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
 export type Task = {
   id: string;
   project_id: string;
@@ -32,6 +41,16 @@ export const columns: ColumnDef<Task>[] = [
   {
     accessorKey: "created_at",
     header: "Created At",
+    cell: ({ row }) => {
+      return (
+        <Tooltip>
+          <TooltipTrigger>{toDDMMYYYY(row.original.created_at)}</TooltipTrigger>
+          <TooltipContent>
+            <p>{smartTimeAgo(row.original.created_at)}</p>
+          </TooltipContent>
+        </Tooltip>
+      );
+    },
   },
   {
     id: "actions",
@@ -57,6 +76,6 @@ export const columns: ColumnDef<Task>[] = [
           </DropdownMenuContent>
         </DropdownMenu>
       );
-    }
-  }
+    },
+  },
 ];
