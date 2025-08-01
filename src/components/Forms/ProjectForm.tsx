@@ -26,6 +26,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox"
+
 
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -37,6 +39,7 @@ const formSchema = z.object({
   }),
   description: z.string().optional(),
   client_id: z.string(),
+  is_pinned: z.boolean(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -51,6 +54,7 @@ async function createProjectInSupabase(data: FormData) {
         name: data.name,
         description: data.description,
         client_id: data.client_id,
+        is_pinned: data.is_pinned,
         created_at: new Date().toISOString(),
       },
     ])
@@ -76,6 +80,7 @@ export function ProjectForm({ clientID }) {
     defaultValues: {
       name: "",
       description: "",
+      is_pinned: false,
       client_id: clientID ? clientID : "",
     },
   });
@@ -169,6 +174,25 @@ export function ProjectForm({ clientID }) {
             </FormItem>
           )}
         />)}
+
+         <FormField
+          control={form.control}
+          name="is_pinned"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>Pinned project to sidebar</FormLabel>
+                <FormDescription>Pin this project for quick access in the sidebar.</FormDescription>
+              </div>
+            </FormItem>
+          )}
+        />
 
         <div className="flex justify-end gap-3">
           <Button
