@@ -180,8 +180,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
-        {/* <NavProjects projects={pinnedProjects} /> */}
+        <NavProjects projects={pinnedProjects} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />
