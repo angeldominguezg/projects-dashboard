@@ -25,6 +25,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar"
+import { usePinnedProjects } from "@/hooks/projects/usePinnedProjects"
 
 // This is sample data.
 const data = {
@@ -165,14 +166,22 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+
+  const { data: pinnedProjects, isLoading: isLoadingPinnedProjects } = usePinnedProjects();
+  console.log("pinnedProjects", pinnedProjects);
+
+  if(isLoadingPinnedProjects) return ("loading...");
+
   return (
     <Sidebar collapsible="icon" {...props}>
+      {/* <pre>{JSON.stringify(pinnedProjects, null, 2)}</pre> */}
       <SidebarHeader>
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
         <NavProjects projects={data.projects} />
+        {/* <NavProjects projects={pinnedProjects} /> */}
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />

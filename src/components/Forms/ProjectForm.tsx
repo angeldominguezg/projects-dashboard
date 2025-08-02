@@ -28,10 +28,13 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox"
 
-
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useClients } from "@/hooks/clients/useClients"
+
+import { generateSlug } from "@/utils/helpers";
+import { useSlugAvailability } from "@/hooks/useSlugAvailability";
+import { useEffect, useState } from "react";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -40,6 +43,11 @@ const formSchema = z.object({
   description: z.string().optional(),
   client_id: z.string(),
   is_pinned: z.boolean(),
+  slug: z.string()
+    .min(3, "Slug must be at least 3 characters")
+    .regex(/^[a-z0-9-]+$/, "Slug can only contain lowercase letters, numbers, and hyphens")
+    .refine((val) => !val.startsWith('-') && !val.endsWith('-'), 
+      "Slug cannot start or end with a hyphen"),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -55,6 +63,7 @@ async function createProjectInSupabase(data: FormData) {
         description: data.description,
         client_id: data.client_id,
         is_pinned: data.is_pinned,
+        slug: data.slug,
         created_at: new Date().toISOString(),
       },
     ])
@@ -69,6 +78,9 @@ async function createProjectInSupabase(data: FormData) {
 }
 
 export function ProjectForm({ clientID }) {
+
+  const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(false);
+
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -80,10 +92,26 @@ export function ProjectForm({ clientID }) {
     defaultValues: {
       name: "",
       description: "",
+      slug: "",
       is_pinned: false,
       client_id: clientID ? clientID : "",
     },
   });
+
+  const watchedName = form.watch("name");
+  const watchedSlug = form.watch("slug");
+
+  // Generar slug automáticamente basado en el nombre
+  useEffect(() => {
+    if (watchedName && !isSlugManuallyEdited) {
+      const autoSlug = generateSlug(watchedName);
+      form.setValue("slug", autoSlug);
+    }
+  }, [watchedName, isSlugManuallyEdited, form]);
+
+    // Verificar disponibilidad del slug
+  const {data: slugCheck, isLoading: checkingSlug } = useSlugAvailability('projects', watchedSlug);
+
 
   const createProjectMutation = useMutation({
     mutationFn: createProjectInSupabase,
@@ -125,6 +153,51 @@ export function ProjectForm({ clientID }) {
             </FormItem>
           )}
         />
+        <FormField
+          control={form.control}
+          name="slug"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>URL Slug</FormLabel>
+              <FormControl>
+                <div className="relative">
+                  <div className="absolute left-3 top-2 text-sm text-muted-foreground">
+                    /projects/
+                  </div>
+                  <Input 
+                    placeholder="new-website-development"
+                    className="pl-20"
+                    {...field}
+                    onChange={(e) => {
+                      setIsSlugManuallyEdited(true);
+                      field.onChange(e.target.value.toLowerCase());
+                    }}
+                  />
+                  {checkingSlug && (
+                    <div className="absolute right-3 top-3">
+                      <div className="animate-spin h-4 w-4 border-2 border-gray-300 border-t-gray-600 rounded-full"></div>
+                    </div>
+                  )}
+                </div>
+              </FormControl>
+              <FormDescription className="flex items-center gap-2">
+                {slugCheck?.isAvailable === false && (
+                  <span className="text-red-500 text-sm">❌ This slug is already taken</span>
+                )}
+                {slugCheck?.isAvailable === true && (
+                  <span className="text-green-500 text-sm">✅ This slug is available</span>
+                )}
+                {!checkingSlug && watchedSlug && (
+                  <span className="text-muted-foreground">
+                    Preview: /projects/{watchedSlug}
+                  </span>
+                )}
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         <FormField
           control={form.control}
           name="description"
