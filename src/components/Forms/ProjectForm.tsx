@@ -7,7 +7,7 @@ import { z } from "zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { Loader2, CalendarDays, DollarSign } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -26,15 +26,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox"
+import { Checkbox } from "@/components/ui/checkbox";
 
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { useClients } from "@/hooks/clients/useClients"
+import { useClients } from "@/hooks/clients/useClients";
 
 import { generateSlug } from "@/utils/helpers";
 import { useSlugAvailability } from "@/hooks/useSlugAvailability";
 import { useEffect, useState } from "react";
+
+import IconSelector from "@/components/IconSelector";
+import DynamicIcon, { iconExists } from "../DynamicIcon";
+
+
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -43,11 +48,23 @@ const formSchema = z.object({
   description: z.string().optional(),
   client_id: z.string(),
   is_pinned: z.boolean(),
-  slug: z.string()
+  slug: z
+    .string()
     .min(3, "Slug must be at least 3 characters")
-    .regex(/^[a-z0-9-]+$/, "Slug can only contain lowercase letters, numbers, and hyphens")
-    .refine((val) => !val.startsWith('-') && !val.endsWith('-'), 
-      "Slug cannot start or end with a hyphen"),
+    .regex(
+      /^[a-z0-9-]+$/,
+      "Slug can only contain lowercase letters, numbers, and hyphens"
+    )
+    .refine(
+      (val) => !val.startsWith("-") && !val.endsWith("-"),
+      "Slug cannot start or end with a hyphen"
+    ),
+  status: z.enum(["planning", "in_progress", "completed", "on_hold"]),
+  priority: z.enum(["low", "medium", "high", "urgent"]),
+  budget: z.string().optional(),
+  start_date: z.string(),
+  end_date: z.string().optional(),
+  icon: z.string().optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -64,7 +81,13 @@ async function createProjectInSupabase(data: FormData) {
         client_id: data.client_id,
         is_pinned: data.is_pinned,
         slug: data.slug,
+        status: data.status,
+        priority: data.priority,
+        budget: data.budget,
+        start_date: data.start_date,
+        end_date: data.end_date,
         created_at: new Date().toISOString(),
+        icon: data.icon,
       },
     ])
     .select()
@@ -78,14 +101,12 @@ async function createProjectInSupabase(data: FormData) {
 }
 
 export function ProjectForm({ clientID }) {
-
   const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(false);
 
   const router = useRouter();
   const queryClient = useQueryClient();
 
   const { data: clients, isLoading: isLoadingClients } = useClients();
-
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -95,11 +116,18 @@ export function ProjectForm({ clientID }) {
       slug: "",
       is_pinned: false,
       client_id: clientID ? clientID : "",
+      status: "planning",
+      priority: "medium",
+      budget: "0.00",
+      start_date: new Date().toISOString().split("T")[0],
+      end_date: "",
+      icon: "",
     },
   });
 
   const watchedName = form.watch("name");
   const watchedSlug = form.watch("slug");
+  const selectedIcon = form.watch("icon");
 
   // Generar slug automáticamente basado en el nombre
   useEffect(() => {
@@ -109,9 +137,11 @@ export function ProjectForm({ clientID }) {
     }
   }, [watchedName, isSlugManuallyEdited, form]);
 
-    // Verificar disponibilidad del slug
-  const {data: slugCheck, isLoading: checkingSlug } = useSlugAvailability('projects', watchedSlug);
-
+  // Verificar disponibilidad del slug
+  const { data: slugCheck, isLoading: checkingSlug } = useSlugAvailability(
+    "projects",
+    watchedSlug
+  );
 
   const createProjectMutation = useMutation({
     mutationFn: createProjectInSupabase,
@@ -164,7 +194,7 @@ export function ProjectForm({ clientID }) {
                   <div className="absolute left-3 top-2 text-sm text-muted-foreground">
                     /projects/
                   </div>
-                  <Input 
+                  <Input
                     placeholder="new-website-development"
                     className="pl-20"
                     {...field}
@@ -182,10 +212,14 @@ export function ProjectForm({ clientID }) {
               </FormControl>
               <FormDescription className="flex items-center gap-2">
                 {slugCheck?.isAvailable === false && (
-                  <span className="text-red-500 text-sm">❌ This slug is already taken</span>
+                  <span className="text-red-500 text-sm">
+                    ❌ This slug is already taken
+                  </span>
                 )}
                 {slugCheck?.isAvailable === true && (
-                  <span className="text-green-500 text-sm">✅ This slug is available</span>
+                  <span className="text-green-500 text-sm">
+                    ✅ This slug is available
+                  </span>
                 )}
                 {!checkingSlug && watchedSlug && (
                   <span className="text-muted-foreground">
@@ -216,39 +250,204 @@ export function ProjectForm({ clientID }) {
         />
 
         {!clientID && (
-        <FormField
-          control={form.control}
-          name="client_id"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Client</FormLabel>
-              <FormControl>
+          <FormField
+            control={form.control}
+            name="client_id"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Client</FormLabel>
+                <FormControl>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                    disabled={isLoadingClients}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a client" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {clients?.map((client) => (
+                        <SelectItem key={client.id} value={client.id}>
+                          {client.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+                <FormDescription>
+                  The client this project belongs to.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+
+        {/* Status and Priority Row */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="status"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Status</FormLabel>
                 <Select
                   onValueChange={field.onChange}
                   defaultValue={field.value}
-                  disabled={isLoadingClients}
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a client" />
-                  </SelectTrigger>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select project status" />
+                    </SelectTrigger>
+                  </FormControl>
                   <SelectContent>
-                    {clients?.map((client) => (
-                      <SelectItem key={client.id} value={client.id}>
-                        {client.name}
-                      </SelectItem>
-                    ))}
+                    <SelectItem value="planning">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                        Planning
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="in_progress">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
+                        In Progress
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="completed">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                        Completed
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="on_hold">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                        On Hold
+                      </div>
+                    </SelectItem>
                   </SelectContent>
                 </Select>
+                <FormDescription>Current status of the project</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="priority"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Priority</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select priority level" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="low">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-gray-400"></div>
+                        Low
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="medium">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                        Medium
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="high">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-orange-500"></div>
+                        High
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="urgent">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                        Urgent
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormDescription>How urgent is this project</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {/* Budget */}
+        <FormField
+          control={form.control}
+          name="budget"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Budget (Optional)</FormLabel>
+              <FormControl>
+                <div className="relative">
+                  <DollarSign className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="number"
+                    placeholder="10000"
+                    className="pl-9"
+                    step="0.01"
+                    min="0"
+                    {...field}
+                  />
+                </div>
               </FormControl>
-              <FormDescription>
-                The client this project belongs to.
-              </FormDescription>
+              <FormDescription>Estimated project budget in USD</FormDescription>
               <FormMessage />
             </FormItem>
           )}
-        />)}
+        />
 
-         <FormField
+        {/* Dates Row */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="start_date"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Start Date</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <CalendarDays className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input type="date" className="pl-9" {...field} />
+                  </div>
+                </FormControl>
+                <FormDescription>When the project should begin</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="end_date"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>End Date (Optional)</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <CalendarDays className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input type="date" className="pl-9" {...field} />
+                  </div>
+                </FormControl>
+                <FormDescription>Expected completion date</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <FormField
           control={form.control}
           name="is_pinned"
           render={({ field }) => (
@@ -261,8 +460,37 @@ export function ProjectForm({ clientID }) {
               </FormControl>
               <div className="space-y-1 leading-none">
                 <FormLabel>Pinned project to sidebar</FormLabel>
-                <FormDescription>Pin this project for quick access in the sidebar.</FormDescription>
+                <FormDescription>
+                  Pin this project for quick access in the sidebar.
+                </FormDescription>
               </div>
+            </FormItem>
+          )}
+        />
+
+        {/* icon selector */}
+        <FormField
+          control={form.control}
+          name="icon"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Icon</FormLabel>
+              <FormControl>
+                <IconSelector
+                  value={field.value}
+                  onValueChange={field.onChange}
+                />
+              </FormControl>
+              {selectedIcon && (
+                <div className="flex items-center gap-2 mt-2 p-2 border rounded">
+                  <span className="text-sm text-muted-foreground">
+                    Preview:
+                  </span>
+                  <DynamicIcon name={selectedIcon} size={20} />
+                  <span className="text-sm">{selectedIcon}</span>
+                </div>
+              )}
+              <FormMessage />
             </FormItem>
           )}
         />
