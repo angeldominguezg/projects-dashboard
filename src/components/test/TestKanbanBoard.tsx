@@ -1,4 +1,5 @@
 'use client';
+import { useState } from 'react';
 import { faker } from '@faker-js/faker';
 
 import {
@@ -9,13 +10,14 @@ import {
   KanbanProvider,
 } from '@/components/ui/shadcn-io/kanban';
 
-import { useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 const columns = [
   { id: faker.string.uuid(), name: 'Planned', color: '#6B7280' },
   { id: faker.string.uuid(), name: 'In Progress', color: '#F59E0B' },
+  { id: faker.string.uuid(), name: 'Revision', color: '#4271e9' },
   { id: faker.string.uuid(), name: 'Done', color: '#10B981' },
+  { id: faker.string.uuid(), name: 'Archive', color: '#6B7280' },
 ];
 const users = Array.from({ length: 4 })
   .fill(null)
