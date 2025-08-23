@@ -11,10 +11,11 @@ interface ProjectHeaderCardProps {
   name: string;
   icon: string | undefined;
   createdAt: string;
+  description: string;
 }
 
 
-function ProjectHeaderCard({ clients, name, icon, createdAt }: ProjectHeaderCardProps) {
+function ProjectHeaderCard({ clients, name, description, icon, createdAt }: ProjectHeaderCardProps) {
   return (
     <div>
       <div className="lg:col-span-2">
@@ -32,9 +33,14 @@ function ProjectHeaderCard({ clients, name, icon, createdAt }: ProjectHeaderCard
             </div>
 
             {/* Breadcrumb */}
-            <div className="text-yellow-800/70 text-sm mb-4">
+            <div className="text-yellow-800/70 text-sm">
               {clients?.name ? `${clients.name} / ` : "My Projects / "}
               {name}
+            </div>
+
+            {/* Project Description */}
+            <div className="mb-4 mt-2">
+              <p className="text-yellow-800/70 text-sm text-bold">{description}</p>
             </div>
 
             {/* Due date */}
