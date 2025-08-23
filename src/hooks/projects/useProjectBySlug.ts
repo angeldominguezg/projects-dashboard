@@ -1,12 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@/utils/supabase/client";
-import { getProjects } from "@/lib/api/projects";
+import { getProjectBySlug } from "@/lib/api/projects";
 
-export function useProjects() {
+export function useProjectBySlug(slug: string) {
   const supabase = createClient();
   return useQuery({
     queryKey: ["projects"],
     // Pasamos una función que llama a nuestro servicio de API
-    queryFn: () => getProjects(supabase),
+    queryFn: () => getProjectBySlug(supabase, slug),
   });
 }
