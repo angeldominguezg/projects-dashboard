@@ -168,7 +168,7 @@ const data = {
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const { data: pinnedProjects, isLoading: isLoadingPinnedProjects } = usePinnedProjects();
-  console.log("pinnedProjects", pinnedProjects);
+  // console.log("pinnedProjects", pinnedProjects);
 
   if(isLoadingPinnedProjects) return ("loading...");
 

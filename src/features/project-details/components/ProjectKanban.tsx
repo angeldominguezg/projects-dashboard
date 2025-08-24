@@ -1,5 +1,6 @@
 "use client";
 
+import type { DragEndEvent } from "@dnd-kit/core";
 import {
   KanbanBoard,
   KanbanCard,
@@ -7,36 +8,69 @@ import {
   KanbanHeader,
   KanbanProvider,
 } from "@/components/ui/shadcn-io/kanban";
-import { useState } from "react";
-import { Task } from "@/lib/api/projects";
+import { useMemo } from "react";
+import { Task } from "@/lib/api/tasks";
 import { TASK_STATUSES } from "@/utils/constants";
-  
-// 1. Los IDs de las columnas deben ser estáticos y predecibles.
-// const columns = [
-//   { id: "planned", name: "Planned", color: "#6B7280" },
-//   { id: "in-progress", name: "In Progress", color: "#F59E0B" },
-//   { id: "revision", name: "Revision", color: "#4271e9" },
-//   { id: "done", name: "Done", color: "#10B981" },
-//   { id: "archive", name: "Archive", color: "#6B7280" },
-// ];
+import { useUpdateTaskStatus } from "@/hooks/tasks/useUpdateTaskStatus";
+import { toast } from "sonner";
 
 interface ProjectKanbanProps {
   tasks: Task[];
 }
 
 function ProjectKanban({ tasks }: ProjectKanbanProps) {
-  const tasksWithColumn = tasks.map((task) => ({
-    ...task,
-    column: task.status,
-  }));
+  const features = useMemo(
+    () =>
+      tasks.map((task) => ({
+        ...task,
+        column: task.status,
+      })),
+    [tasks]
+  );
+  const { updateTask } = useUpdateTaskStatus();
 
-  const [features, setFeatures] = useState(tasksWithColumn);
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    console.log("active.id", active.id)
+    console.log("over.id", over?.id)
+    console.log("over", over)
+
+    if (!over) {
+      return;
+    }
+
+    const activeId = active.id;
+    const overId = over.id;
+
+    if (activeId === overId) {
+      return;
+    }
+
+    // Obtiene la columna original de la tarjeta arrastrada.
+    const activeContainer = active.data.current?.column;
+    // Determina la columna de destino. Si se suelta sobre una tarjeta, usa la columna de esa tarjeta.
+    // Si se suelta en una columna vacía, usa el id de la columna.
+    const overContainer = over.data.current?.column || overId;
+
+    // Solo ejecuta la mutación si la tarjeta realmente cambió de columna.
+    if (activeContainer === overContainer) return;
+
+    updateTask(
+      { taskId: String(activeId), newStatus: String(overContainer) },
+      {
+        onSuccess: () => {
+          toast.success("Task status updated successfully");
+        },
+      }
+    );
+  };
 
   return (
     <KanbanProvider
       columns={TASK_STATUSES}
       data={features}
-      onDataChange={setFeatures}
+      onDragEnd={handleDragEnd}
     >
       {(TASK_STATUSES) => (
         <KanbanBoard id={TASK_STATUSES.id} key={TASK_STATUSES.id}>
