@@ -1,5 +1,5 @@
 import { createClient } from "@/utils/supabase/server";
-import { getProjectBySlug, Project } from "@/lib/api/projects";
+import { getProjectBySlug } from "@/lib/api/projects";
 import {
   HydrationBoundary,
   QueryClient,
@@ -12,8 +12,7 @@ interface Props {
 }
 
 export default async function Page({ params }: Props) {
-  const { slug } = params;
-
+  const { slug } = await params;
   const queryClient = new QueryClient();
   const supabase = createClient();
 
@@ -23,17 +22,6 @@ export default async function Page({ params }: Props) {
     queryKey: ["project", slug],
     queryFn: () => getProjectBySlug(supabase, slug),
   });
-
-  // 2. Obtenemos los datos pre-cargados para usarlos en el renderizado del servidor
-  const project = queryClient.getQueryData<Project | null>(["project", slug]);
-
-  // 3. Si el proyecto no se encuentra, la función de fetch lanzará un error
-  // y Next.js mostrará la página de "no encontrado".
-  if (!project) {
-    // Esta comprobación es una salvaguarda. getProjectBySlug ya llama a notFound()
-    // si hay un error o no se encuentra el proyecto.
-    return null;
-  }
 
   return (
     <div className="min-h-screen">
