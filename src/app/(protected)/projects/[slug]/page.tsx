@@ -14,7 +14,7 @@ interface Props {
 export default async function Page({ params }: Props) {
   const { slug } = await params;
   const queryClient = new QueryClient();
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // 1. Hacemos prefetch del proyecto específico usando una queryKey única
   await queryClient.prefetchQuery({

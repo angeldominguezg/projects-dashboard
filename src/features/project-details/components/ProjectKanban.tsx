@@ -8,11 +8,12 @@ import {
   KanbanHeader,
   KanbanProvider,
 } from "@/components/ui/shadcn-io/kanban";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Task } from "@/lib/api/tasks";
 import { TASK_STATUSES } from "@/utils/constants";
 import { useUpdateTaskStatus } from "@/hooks/tasks/useUpdateTaskStatus";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 
 interface ProjectKanbanProps {
   tasks: Task[];
@@ -27,14 +28,11 @@ function ProjectKanban({ tasks }: ProjectKanbanProps) {
       })),
     [tasks]
   );
+  const [showArchived, setShowArchived] = useState(false);
   const { updateTask } = useUpdateTaskStatus();
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-
-    console.log("active.id", active.id)
-    console.log("over.id", over?.id)
-    console.log("over", over)
 
     if (!over) {
       return;
@@ -60,55 +58,81 @@ function ProjectKanban({ tasks }: ProjectKanbanProps) {
       { taskId: String(activeId), newStatus: String(overContainer) },
       {
         onSuccess: () => {
-          toast.success("Task status updated successfully");
+          const newStatus = TASK_STATUSES.find(
+            (status) => status.id === overContainer
+          );
+          toast.success(`Task status changed to "${newStatus?.name || overContainer}".`);
         },
       }
     );
   };
 
+  const visibleColumns = useMemo(
+    () =>
+      showArchived
+        ? TASK_STATUSES
+        : TASK_STATUSES.filter((status) => status.id !== "archive"),
+    [showArchived]
+  );
+
+  const visibleFeatures = useMemo(
+    () =>
+      showArchived
+        ? features
+        : features.filter((task) => task.status !== "archive"),
+    [features, showArchived]
+  );
+
   return (
-    <KanbanProvider
-      columns={TASK_STATUSES}
-      data={features}
-      onDragEnd={handleDragEnd}
-    >
-      {(TASK_STATUSES) => (
-        <KanbanBoard id={TASK_STATUSES.id} key={TASK_STATUSES.id}>
-          <KanbanHeader>
-            <div className="flex items-center gap-2">
-              <div
-                className="h-2 w-2 rounded-full"
-                style={{ backgroundColor: TASK_STATUSES.color }}
-              />
-              <span>{TASK_STATUSES.name}</span>
-            </div>
-          </KanbanHeader>
-          <KanbanCards id={TASK_STATUSES.id}>
-            {(feature: (typeof features)[number]) => (
-              <KanbanCard
-                // 3. La prop 'column' ahora es dinámica.
-                column={feature.status}
-                id={feature.id}
-                key={feature.id}
-                name={feature.name}
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex flex-col gap-1">
-                    <p className="m-0 flex-1 font-medium text-sm">
-                      {feature.name}
-                    </p>
+    <>
+      <div className="mb-4">
+        <Button variant="outline" onClick={() => setShowArchived(!showArchived)}>
+          {showArchived ? "Hide Archived" : "Show Archived"}
+        </Button>
+      </div>
+      <KanbanProvider
+        columns={visibleColumns}
+        data={visibleFeatures}
+        onDragEnd={handleDragEnd}
+      >
+        {(column) => (
+          <KanbanBoard id={column.id} key={column.id}>
+            <KanbanHeader>
+              <div className="flex items-center gap-2">
+                <div
+                  className="h-2 w-2 rounded-full"
+                  style={{ backgroundColor: column.color }}
+                />
+                <span>{column.name}</span>
+              </div>
+            </KanbanHeader>
+            <KanbanCards id={column.id}>
+              {(feature: (typeof features)[number]) => (
+                <KanbanCard
+                  // 3. La prop 'column' ahora es dinámica.
+                  column={feature.status}
+                  id={feature.id}
+                  key={feature.id}
+                  name={feature.name}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex flex-col gap-1">
+                      <p className="m-0 flex-1 font-medium text-sm">
+                        {feature.name}
+                      </p>
+                    </div>
                   </div>
-                </div>
-                <p className="m-0 text-muted-foreground text-xs">
-                  {/* {shortDateFormatter.format(feature.startAt)} -{" "}
-                    {dateFormatter.format(feature.endAt)} */}
-                </p>
-              </KanbanCard>
-            )}
-          </KanbanCards>
-        </KanbanBoard>
-      )}
-    </KanbanProvider>
+                  <p className="m-0 text-muted-foreground text-xs">
+                    {/* {shortDateFormatter.format(feature.startAt)} -{" "}
+                      {dateFormatter.format(feature.endAt)} */}
+                  </p>
+                </KanbanCard>
+              )}
+            </KanbanCards>
+          </KanbanBoard>
+        )}
+      </KanbanProvider>
+    </>
   );
 }
 
