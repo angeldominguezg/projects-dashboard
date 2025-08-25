@@ -6,3 +6,9 @@ export const TASK_STATUSES = [
   { id: "archive", name: "Archive", color: "#6B7280" },
 ];
 
+export const TASK_PRIORITY = [
+  { id: "low", name: "Low", color: "#6B7280" },
+  { id: "medium", name: "Medium", color: "#4271e9" },
+  { id: "high", name: "High", color: "#F59E0B" },
+  { id: "critical", name: "Critical", color: "#FF521B" },
+]

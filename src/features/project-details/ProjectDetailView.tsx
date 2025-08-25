@@ -43,7 +43,7 @@ export function ProjectDetailView({ slug }: ProjectDetailViewProps) {
         {/* <ProjectDescription description={description} /> */}
         {/* Para depuración */}
         <pre className="mt-4">
-          <code>{JSON.stringify(project, null, 2)}</code>
+          {/* <code>{JSON.stringify(project, null, 2)}</code> */}
         </pre>
       </div>
     </div>

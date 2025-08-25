@@ -14,6 +14,9 @@ import { TASK_STATUSES } from "@/utils/constants";
 import { useUpdateTaskStatus } from "@/hooks/tasks/useUpdateTaskStatus";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import TaskPriorityBadge from "@/components/TaskPriorityBadge";
+
+
 
 interface ProjectKanbanProps {
   tasks: Task[];
@@ -86,7 +89,10 @@ function ProjectKanban({ tasks }: ProjectKanbanProps) {
   return (
     <>
       <div className="mb-4">
-        <Button variant="outline" onClick={() => setShowArchived(!showArchived)}>
+        <Button
+          variant="outline"
+          onClick={() => setShowArchived(!showArchived)}
+        >
           {showArchived ? "Hide Archived" : "Show Archived"}
         </Button>
       </div>
@@ -115,14 +121,22 @@ function ProjectKanban({ tasks }: ProjectKanbanProps) {
                   key={feature.id}
                   name={feature.name}
                 >
+                  <div>
+                    <TaskPriorityBadge priority={feature.priority} />
+                  </div>
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex flex-col gap-1">
-                      <p className="m-0 flex-1 font-medium text-sm">
+                      <p className="m-0 flex-1 text-sm font-bold">
                         {feature.name}
+                      </p>
+                       <p className="m-0 flex-1 text-xd font-light">
+                        {feature.description}
                       </p>
                     </div>
                   </div>
                   <p className="m-0 text-muted-foreground text-xs">
+                    {/* TODO: FORMAT DATES */}
+                    {feature.created_at} - {feature.completed_at}
                     {/* {shortDateFormatter.format(feature.startAt)} -{" "}
                       {dateFormatter.format(feature.endAt)} */}
                   </p>
